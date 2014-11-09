@@ -14,13 +14,14 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class AlwaysOnTopService extends Service {
-	private TextView mPopupView;							//항상 보이게 할 뷰
+public class AlwaysOnTopService extends Service {	
+	private ImageView mPopupView;							//항상 보이게 할 뷰
 	private WindowManager.LayoutParams mParams;		//layout params 객체. 뷰의 위치 및 크기를 지정하는 객체
 	private WindowManager mWindowManager;			//윈도우 매니저
 	private SeekBar mSeekBar;								//투명도 조절 seek bar
@@ -75,13 +76,10 @@ public class AlwaysOnTopService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
-		mPopupView = new TextView(this);																//뷰 생성
-		mPopupView.setText("이 뷰는 항상 위에 있다.\n갤럭시 & 옵티머스 팝업 뷰와 같음");	//텍스트 설정
-		mPopupView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);								//텍스트 크기 18sp
-		mPopupView.setTextColor(Color.BLUE);															//글자 색상
-		mPopupView.setBackgroundColor(Color.argb(127, 0, 255, 255));								//텍스트뷰 배경 색
+		mPopupView = new ImageView(this);							//뷰 생성
+		mPopupView.setImageResource(R.drawable.ic_launcher);
 		
-		mPopupView.setOnTouchListener(mViewTouchListener);										//팝업뷰에 터치 리스너 등록
+		mPopupView.setOnTouchListener(mViewTouchListener);			//팝업뷰에 터치 리스너 등록
 		mPopupView.setOnClickListener(mViewClickListener);
 		//최상위 윈도우에 넣기 위한 설정
 		mParams = new WindowManager.LayoutParams(
