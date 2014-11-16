@@ -1,70 +1,114 @@
 package pe.sbk.alwaysontop;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.ListPopupWindow;
 import android.widget.SeekBar;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class AlwaysOnTopService extends Service {
-	private TextView mPopupView;							//Ç×»ó º¸ÀÌ°Ô ÇÒ ºä
-	private WindowManager.LayoutParams mParams;		//layout params °´Ã¼. ºäÀÇ À§Ä¡ ¹× Å©±â¸¦ ÁöÁ¤ÇÏ´Â °´Ã¼
-	private WindowManager mWindowManager;			//À©µµ¿ì ¸Å´ÏÀú
-	private SeekBar mSeekBar;								//Åõ¸íµµ Á¶Àı seek bar
+	private TextView mPopupView;							//í•­ìƒ ë³´ì´ê²Œ í•  ë·°
+	private ImageView mImageView;
+	private WindowManager.LayoutParams mParams;		//layout params ê°ì²´. ë·°ì˜ ìœ„ì¹˜ ë° í¬ê¸°ë¥¼ ì§€ì •í•˜ëŠ” ê°ì²´
+	private WindowManager mWindowManager;			//ìœˆë„ìš° ë§¤ë‹ˆì €
+	private SeekBar mSeekBar;								//íˆ¬ëª…ë„ ì¡°ì ˆ seek bar
+	private Boolean _enable = true;
 	
-	private float START_X, START_Y;							//¿òÁ÷ÀÌ±â À§ÇØ ÅÍÄ¡ÇÑ ½ÃÀÛ Á¡
-	private int PREV_X, PREV_Y;								//¿òÁ÷ÀÌ±â ÀÌÀü¿¡ ºä°¡ À§Ä¡ÇÑ Á¡
-	private int MAX_X = -1, MAX_Y = -1;					//ºäÀÇ À§Ä¡ ÃÖ´ë °ª
+	ArrayList<String> quickmenu;
+	List quickmenulist;
 	
-	private OnTouchListener mViewTouchListener = new OnTouchListener() {
+	private float START_X, START_Y;							//ì›€ì§ì´ê¸° ìœ„í•´ í„°ì¹˜í•œ ì‹œì‘ ì 
+	private int PREV_X, PREV_Y;								//ì›€ì§ì´ê¸° ì´ì „ì— ë·°ê°€ ìœ„ì¹˜í•œ ì 
+	private int MAX_X = -1, MAX_Y = -1;					//ë·°ì˜ ìœ„ì¹˜ ìµœëŒ€ ê°’
+	
+	/*private OnTouchListener mViewTouchListener = new OnTouchListener() {
 		@Override public boolean onTouch(View v, MotionEvent event) {
 			switch(event.getAction()) {
-				case MotionEvent.ACTION_DOWN:				//»ç¿ëÀÚ ÅÍÄ¡ ´Ù¿îÀÌ¸é
+				case MotionEvent.ACTION_DOWN:				//ì‚¬ìš©ì í„°ì¹˜ ë‹¤ìš´ì´ë©´
 					if(MAX_X == -1)
 						setMaxPosition();
-					START_X = event.getRawX();					//ÅÍÄ¡ ½ÃÀÛ Á¡
-					START_Y = event.getRawY();					//ÅÍÄ¡ ½ÃÀÛ Á¡
-					PREV_X = mParams.x;							//ºäÀÇ ½ÃÀÛ Á¡
-					PREV_Y = mParams.y;							//ºäÀÇ ½ÃÀÛ Á¡
+					START_X = event.getRawX();					//í„°ì¹˜ ì‹œì‘ ì 
+					START_Y = event.getRawY();					//í„°ì¹˜ ì‹œì‘ ì 
+					PREV_X = mParams.x;							//ë·°ì˜ ì‹œì‘ ì 
+					PREV_Y = mParams.y;							//ë·°ì˜ ì‹œì‘ ì 
 					break;
 				case MotionEvent.ACTION_MOVE:
-					int x = (int)(event.getRawX() - START_X);	//ÀÌµ¿ÇÑ °Å¸®
-					int y = (int)(event.getRawY() - START_Y);	//ÀÌµ¿ÇÑ °Å¸®
+					int x = (int)(event.getRawX() - START_X);	//ì´ë™í•œ ê±°ë¦¬
+					int y = (int)(event.getRawY() - START_Y);	//ì´ë™í•œ ê±°ë¦¬
 					
-					//ÅÍÄ¡ÇØ¼­ ÀÌµ¿ÇÑ ¸¸Å­ ÀÌµ¿ ½ÃÅ²´Ù
+					//í„°ì¹˜í•´ì„œ ì´ë™í•œ ë§Œí¼ ì´ë™ ì‹œí‚¨ë‹¤
 					mParams.x = PREV_X + x;
 					mParams.y = PREV_Y + y;
 					
-					optimizePosition();		//ºäÀÇ À§Ä¡ ÃÖÀûÈ­
-					mWindowManager.updateViewLayout(mPopupView, mParams);	//ºä ¾÷µ¥ÀÌÆ®
+					optimizePosition();		//ë·°ì˜ ìœ„ì¹˜ ìµœì í™”
+					mWindowManager.updateViewLayout(mPopupView, mParams);	//ë·° ì—…ë°ì´íŠ¸
 					break;
 			}
 			
 			return true;
 		}
-	};
+	};*/
 	
-	private OnClickListener mViewClickListener = new OnClickListener(){
-
-		@Override
-		public void onClick(View v) {
-			// TODO Auto-generated method stub
-			Toast.makeText(getApplicationContext(), "test", 2000).show();
+	private OnTouchListener mButtonTouchListener = new OnTouchListener() {
+		@Override public boolean onTouch(View v, MotionEvent event) {
+			switch(event.getAction()) {
+				case MotionEvent.ACTION_DOWN:				//ì‚¬ìš©ì í„°ì¹˜ ë‹¤ìš´ì´ë©´
+					if(MAX_X == -1)
+						setMaxPosition();
+					START_X = event.getRawX();					//í„°ì¹˜ ì‹œì‘ ì 
+					START_Y = event.getRawY();					//í„°ì¹˜ ì‹œì‘ ì 
+					PREV_X = mParams.x;							//ë·°ì˜ ì‹œì‘ ì 
+					PREV_Y = mParams.y;							//ë·°ì˜ ì‹œì‘ ì 
+					break;
+				case MotionEvent.ACTION_MOVE:
+					int x = (int)(event.getRawX() - START_X);	//ì´ë™í•œ ê±°ë¦¬
+					int y = (int)(event.getRawY() - START_Y);	//ì´ë™í•œ ê±°ë¦¬
+					
+					//í„°ì¹˜í•´ì„œ ì´ë™í•œ ë§Œí¼ ì´ë™ ì‹œí‚¨ë‹¤
+					mParams.x = PREV_X + x;
+					mParams.y = PREV_Y + y;
+					
+					optimizePosition();		//ë·°ì˜ ìœ„ì¹˜ ìµœì í™”
+					mWindowManager.updateViewLayout(mImageView, mParams);	//ë·° ì—…ë°ì´íŠ¸
+					break;
+				case MotionEvent.ACTION_UP:
+					Display display = mWindowManager.getDefaultDisplay();
+					if(mParams.x > display.getWidth()/2){
+						mParams.x =display.getWidth();
+					}else{
+						mParams.x = 0;
+					}
+					
+					
+					mWindowManager.updateViewLayout(mImageView, mParams);	//ë·° ì—…ë°ì´íŠ¸
+					
+					initiatePopupWindow(mImageView);
+					break;
+			}
+			
+			return true;
 		}
-		
 	};
 
 	
@@ -75,46 +119,61 @@ public class AlwaysOnTopService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
-		mPopupView = new TextView(this);																//ºä »ı¼º
-		mPopupView.setText("ÀÌ ºä´Â Ç×»ó À§¿¡ ÀÖ´Ù.\n°¶·°½Ã & ¿ÉÆ¼¸Ó½º ÆË¾÷ ºä¿Í °°À½");	//ÅØ½ºÆ® ¼³Á¤
-		mPopupView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);								//ÅØ½ºÆ® Å©±â 18sp
-		mPopupView.setTextColor(Color.BLUE);															//±ÛÀÚ »ö»ó
-		mPopupView.setBackgroundColor(Color.argb(127, 0, 255, 255));								//ÅØ½ºÆ®ºä ¹è°æ »ö
+		quickmenu = new ArrayList<String>();
+
+		quickmenu.add("HomeMain");
+		quickmenu.add("Best");
+		quickmenu.add("Search");
+		quickmenu.add("MyG");
 		
-		mPopupView.setOnTouchListener(mViewTouchListener);										//ÆË¾÷ºä¿¡ ÅÍÄ¡ ¸®½º³Ê µî·Ï
-		mPopupView.setOnClickListener(mViewClickListener);
-		//ÃÖ»óÀ§ À©µµ¿ì¿¡ ³Ö±â À§ÇÑ ¼³Á¤
+		quickmenulist = new ArrayList();
+		for(int i=0 ; i<quickmenu.size() ; ++i) {
+			quickmenulist.add(quickmenu.get(i));
+		}
+
+		/*mPopupView = new TextView(this);																//ë·° ìƒì„±
+		mPopupView.setText("ì´ ë·°ëŠ” í•­ìƒ ìœ„ì— ìˆë‹¤.\nê°¤ëŸ­ì‹œ & ì˜µí‹°ë¨¸ìŠ¤ íŒì—… ë·°ì™€ ê°™ìŒ");	//í…ìŠ¤íŠ¸ ì„¤ì •
+		mPopupView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);								//í…ìŠ¤íŠ¸ í¬ê¸° 18sp
+		mPopupView.setTextColor(Color.BLUE);															//ê¸€ì ìƒ‰ìƒ
+		mPopupView.setBackgroundColor(Color.argb(127, 0, 255, 255));								//í…ìŠ¤íŠ¸ë·° ë°°ê²½ ìƒ‰
+		
+		mPopupView.setOnTouchListener(mViewTouchListener);										//íŒì—…ë·°ì— í„°ì¹˜ ë¦¬ìŠ¤ë„ˆ ë“±ë¡
+		//ìµœìƒìœ„ ìœˆë„ìš°ì— ë„£ê¸° ìœ„í•œ ì„¤ì •
 		mParams = new WindowManager.LayoutParams(
 			WindowManager.LayoutParams.WRAP_CONTENT,
 			WindowManager.LayoutParams.WRAP_CONTENT,
-			WindowManager.LayoutParams.TYPE_PHONE,					//Ç×»ó ÃÖ »óÀ§¿¡ ÀÖ°Ô. status bar ¹Ø¿¡ ÀÖÀ½. ÅÍÄ¡ ÀÌº¥Æ® ¹ŞÀ» ¼ö ÀÖÀ½.
-			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,		//ÀÌ ¼Ó¼ºÀ» ¾ÈÁÖ¸é ÅÍÄ¡ & Å° ÀÌº¥Æ®µµ ¸Ô°Ô µÈ´Ù. 
-																					//Æ÷Ä¿½º¸¦ ¾ÈÁà¼­ ÀÚ±â ¿µ¿ª ¹ÛÅÍÄ¡´Â ÀÎ½Ä ¾ÈÇÏ°í Å°ÀÌº¥Æ®¸¦ »ç¿ëÇÏÁö ¾Ê°Ô ¼³Á¤
-			PixelFormat.TRANSLUCENT);										//Åõ¸í
-		mParams.gravity = Gravity.LEFT | Gravity.TOP;						//¿ŞÂÊ »ó´Ü¿¡ À§Ä¡ÇÏ°Ô ÇÔ.
+			WindowManager.LayoutParams.TYPE_PHONE,					//í•­ìƒ ìµœ ìƒìœ„ì— ìˆê²Œ. status bar ë°‘ì— ìˆìŒ. í„°ì¹˜ ì´ë²¤íŠ¸ ë°›ì„ ìˆ˜ ìˆìŒ.
+			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,		//ì´ ì†ì„±ì„ ì•ˆì£¼ë©´ í„°ì¹˜ & í‚¤ ì´ë²¤íŠ¸ë„ ë¨¹ê²Œ ëœë‹¤. 
+																					//í¬ì»¤ìŠ¤ë¥¼ ì•ˆì¤˜ì„œ ìê¸° ì˜ì—­ ë°–í„°ì¹˜ëŠ” ì¸ì‹ ì•ˆí•˜ê³  í‚¤ì´ë²¤íŠ¸ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šê²Œ ì„¤ì •
+			PixelFormat.TRANSLUCENT);										//íˆ¬ëª…
+		mParams.gravity = Gravity.LEFT | Gravity.TOP;						//ì™¼ìª½ ìƒë‹¨ì— ìœ„ì¹˜í•˜ê²Œ í•¨.
 		
-		mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);	//À©µµ¿ì ¸Å´ÏÀú ºÒ·¯¿È.
-		mWindowManager.addView(mPopupView, mParams);		//ÃÖ»óÀ§ À©µµ¿ì¿¡ ºä ³Ö±â. *Áß¿ä : ¿©±â¿¡ permissionÀ» ¹Ì¸® ¼³Á¤ÇØ µÎ¾î¾ß ÇÑ´Ù. ¸Å´ÏÆä½ºÆ®¿¡
+		mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);	//ìœˆë„ìš° ë§¤ë‹ˆì € ë¶ˆëŸ¬ì˜´.
+		mWindowManager.addView(mPopupView, mParams);		//ìµœìƒìœ„ ìœˆë„ìš°ì— ë·° ë„£ê¸°. *ì¤‘ìš” : ì—¬ê¸°ì— permissionì„ ë¯¸ë¦¬ ì„¤ì •í•´ ë‘ì–´ì•¼ í•œë‹¤. ë§¤ë‹ˆí˜ìŠ¤íŠ¸ì—
+*/		
+		//addOpacityController();		//íŒì—… ë·°ì˜ íˆ¬ëª…ë„ ì¡°ì ˆí•˜ëŠ” ì»¨íŠ¸ë¡¤ëŸ¬ ì¶”ê°€
 		
-		addOpacityController();		//ÆË¾÷ ºäÀÇ Åõ¸íµµ Á¶ÀıÇÏ´Â ÄÁÆ®·Ñ·¯ Ãß°¡
+		
+		mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);	//ìœˆë„ìš° ë§¤ë‹ˆì € ë¶ˆëŸ¬ì˜´.
+		addGmarketQuickButton();
 	}
 	
 	/**
-	 * ºäÀÇ À§Ä¡°¡ È­¸é ¾È¿¡ ÀÖ°Ô ÃÖ´ë°ªÀ» ¼³Á¤ÇÑ´Ù
+	 * ë·°ì˜ ìœ„ì¹˜ê°€ í™”ë©´ ì•ˆì— ìˆê²Œ ìµœëŒ€ê°’ì„ ì„¤ì •í•œë‹¤
 	 */
 	private void setMaxPosition() {
 		DisplayMetrics matrix = new DisplayMetrics();
-		mWindowManager.getDefaultDisplay().getMetrics(matrix);		//È­¸é Á¤º¸¸¦ °¡Á®¿Í¼­
+		mWindowManager.getDefaultDisplay().getMetrics(matrix);		//í™”ë©´ ì •ë³´ë¥¼ ê°€ì ¸ì™€ì„œ
 		
-		MAX_X = matrix.widthPixels - mPopupView.getWidth();			//x ÃÖ´ë°ª ¼³Á¤
-		MAX_Y = matrix.heightPixels - mPopupView.getHeight();			//y ÃÖ´ë°ª ¼³Á¤
+		MAX_X = matrix.widthPixels - mImageView.getWidth();			//x ìµœëŒ€ê°’ ì„¤ì •
+		MAX_Y = matrix.heightPixels - mImageView.getHeight();			//y ìµœëŒ€ê°’ ì„¤ì •
 	}
 	
 	/**
-	 * ºäÀÇ À§Ä¡°¡ È­¸é ¾È¿¡ ÀÖ°Ô ÇÏ±â À§ÇØ¼­ °Ë»çÇÏ°í ¼öÁ¤ÇÑ´Ù.
+	 * ë·°ì˜ ìœ„ì¹˜ê°€ í™”ë©´ ì•ˆì— ìˆê²Œ í•˜ê¸° ìœ„í•´ì„œ ê²€ì‚¬í•˜ê³  ìˆ˜ì •í•œë‹¤.
 	 */
 	private void optimizePosition() {
-		//ÃÖ´ë°ª ³Ñ¾î°¡Áö ¾Ê°Ô ¼³Á¤
+		//ìµœëŒ€ê°’ ë„˜ì–´ê°€ì§€ ì•Šê²Œ ì„¤ì •
 		if(mParams.x > MAX_X) mParams.x = MAX_X;
 		if(mParams.y > MAX_Y) mParams.y = MAX_Y;
 		if(mParams.x < 0) mParams.x = 0;
@@ -122,48 +181,118 @@ public class AlwaysOnTopService extends Service {
 	}
 	
 	/**
-	 * ¾ËÆÄ°ª Á¶ÀıÇÏ´Â ÄÁÆ®·Ñ·¯¸¦ Ãß°¡ÇÑ´Ù
+	 * ì•ŒíŒŒê°’ ì¡°ì ˆí•˜ëŠ” ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì¶”ê°€í•œë‹¤
 	 */
 	private void addOpacityController() {
-		mSeekBar = new SeekBar(this);		//Åõ¸íµµ Á¶Àı seek bar
-		mSeekBar.setMax(100);					//¸Æ½º °ª ¼³Á¤.
-		mSeekBar.setProgress(100);			//ÇöÀç Åõ¸íµµ ¼³Á¤. 100:ºÒÅõ¸í, 0Àº ¿ÏÀü Åõ¸í
+		mSeekBar = new SeekBar(this);		//íˆ¬ëª…ë„ ì¡°ì ˆ seek bar
+		mSeekBar.setMax(100);					//ë§¥ìŠ¤ ê°’ ì„¤ì •.
+		mSeekBar.setProgress(100);			//í˜„ì¬ íˆ¬ëª…ë„ ì„¤ì •. 100:ë¶ˆíˆ¬ëª…, 0ì€ ì™„ì „ íˆ¬ëª…
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override public void onStopTrackingTouch(SeekBar seekBar) {}
 			@Override public void onStartTrackingTouch(SeekBar seekBar) {}
 			
 			@Override public void onProgressChanged(SeekBar seekBar, int progress,	boolean fromUser) {
-				mParams.alpha = progress / 100.0f;			//¾ËÆÄ°ª ¼³Á¤
-				mWindowManager.updateViewLayout(mPopupView, mParams);	//ÆË¾÷ ºä ¾÷µ¥ÀÌÆ®
+				mParams.alpha = progress / 100.0f;			//ì•ŒíŒŒê°’ ì„¤ì •
+				mWindowManager.updateViewLayout(mPopupView, mParams);	//íŒì—… ë·° ì—…ë°ì´íŠ¸
 			}
 		});
 		
-		//ÃÖ»óÀ§ À©µµ¿ì¿¡ ³Ö±â À§ÇÑ ¼³Á¤
+		//ìµœìƒìœ„ ìœˆë„ìš°ì— ë„£ê¸° ìœ„í•œ ì„¤ì •
 		WindowManager.LayoutParams params = new WindowManager.LayoutParams(
 			WindowManager.LayoutParams.MATCH_PARENT,
 			WindowManager.LayoutParams.WRAP_CONTENT,
-			WindowManager.LayoutParams.TYPE_PHONE,					//Ç×»ó ÃÖ »óÀ§¿¡ ÀÖ°Ô. status bar ¹Ø¿¡ ÀÖÀ½. ÅÍÄ¡ ÀÌº¥Æ® ¹ŞÀ» ¼ö ÀÖÀ½.
-			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,		//ÀÌ ¼Ó¼ºÀ» ¾ÈÁÖ¸é ÅÍÄ¡ & Å° ÀÌº¥Æ®µµ ¸Ô°Ô µÈ´Ù. 
-																					//Æ÷Ä¿½º¸¦ ¾ÈÁà¼­ ÀÚ±â ¿µ¿ª ¹ÛÅÍÄ¡´Â ÀÎ½Ä ¾ÈÇÏ°í Å°ÀÌº¥Æ®¸¦ »ç¿ëÇÏÁö ¾Ê°Ô ¼³Á¤
-			PixelFormat.TRANSLUCENT);										//Åõ¸í
-		params.gravity = Gravity.LEFT | Gravity.TOP;							//¿ŞÂÊ »ó´Ü¿¡ À§Ä¡ÇÏ°Ô ÇÔ.
+			WindowManager.LayoutParams.TYPE_PHONE,					//í•­ìƒ ìµœ ìƒìœ„ì— ìˆê²Œ. status bar ë°‘ì— ìˆìŒ. í„°ì¹˜ ì´ë²¤íŠ¸ ë°›ì„ ìˆ˜ ìˆìŒ.
+			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,		//ì´ ì†ì„±ì„ ì•ˆì£¼ë©´ í„°ì¹˜ & í‚¤ ì´ë²¤íŠ¸ë„ ë¨¹ê²Œ ëœë‹¤. 
+																					//í¬ì»¤ìŠ¤ë¥¼ ì•ˆì¤˜ì„œ ìê¸° ì˜ì—­ ë°–í„°ì¹˜ëŠ” ì¸ì‹ ì•ˆí•˜ê³  í‚¤ì´ë²¤íŠ¸ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šê²Œ ì„¤ì •
+			PixelFormat.TRANSLUCENT);										//íˆ¬ëª…
+		params.gravity = Gravity.LEFT | Gravity.TOP;							//ì™¼ìª½ ìƒë‹¨ì— ìœ„ì¹˜í•˜ê²Œ í•¨.
 		
 		mWindowManager.addView(mSeekBar, params);
 	}
 
+	private void addGmarketQuickButton(){
+		mImageView = new ImageView(this);							
+		mImageView.setImageResource(R.drawable.ic_launcher);
+		
+		//ìµœìƒìœ„ ìœˆë„ìš°ì— ë„£ê¸° ìœ„í•œ ì„¤ì •
+		mParams = new WindowManager.LayoutParams(
+			WindowManager.LayoutParams.WRAP_CONTENT,
+			WindowManager.LayoutParams.WRAP_CONTENT,
+			WindowManager.LayoutParams.TYPE_PHONE,					//í•­ìƒ ìµœ ìƒìœ„ì— ìˆê²Œ. status bar ë°‘ì— ìˆìŒ. í„°ì¹˜ ì´ë²¤íŠ¸ ë°›ì„ ìˆ˜ ìˆìŒ.
+			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,		//ì´ ì†ì„±ì„ ì•ˆì£¼ë©´ í„°ì¹˜ & í‚¤ ì´ë²¤íŠ¸ë„ ë¨¹ê²Œ ëœë‹¤. 
+																					//í¬ì»¤ìŠ¤ë¥¼ ì•ˆì¤˜ì„œ ìê¸° ì˜ì—­ ë°–í„°ì¹˜ëŠ” ì¸ì‹ ì•ˆí•˜ê³  í‚¤ì´ë²¤íŠ¸ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šê²Œ ì„¤ì •
+			PixelFormat.TRANSLUCENT);										//íˆ¬ëª…
+		mParams.gravity = Gravity.LEFT | Gravity.TOP;							//ì™¼ìª½ ìƒë‹¨ì— ìœ„ì¹˜í•˜ê²Œ í•¨.
+		
+		mWindowManager.addView(mImageView, mParams);
+		
+		// TODO:
+/*		mImageView.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				initiatePopupWindow(mImageView);
+				_enable = false;
+			}
+		});*/
+		
+		try {	
+			mImageView.setOnTouchListener(mButtonTouchListener);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+	
+	
+	private void initiatePopupWindow(View anchor) {
+		try {
+			Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+			ListPopupWindow popup = new ListPopupWindow(this);
+			popup.setAnchorView(anchor);
+			popup.setWidth((int) (display.getWidth()/(1.5)));
+			//ArrayAdapter<String> arrayAdapter = 
+			//new ArrayAdapter<String>(this,R.layout.list_item, myArray);
+			popup.setAdapter(new CustomAdapter(getApplicationContext(), R.layout.row, quickmenulist));
+			popup.setOnItemClickListener(new OnItemClickListener() {
+
+				@Override
+				public void onItemClick(AdapterView<?> arg0, View view, int position, long id3) {
+					//Log.w("tag", "package : "+apps.get(position).pname.toString());
+/*					Intent i;
+					PackageManager manager = getPackageManager();
+					try {
+						i = manager.getLaunchIntentForPackage(apps.get(position).pname.toString());
+						if (i == null)
+							throw new PackageManager.NameNotFoundException();
+						i.addCategory(Intent.CATEGORY_LAUNCHER);
+						startActivity(i);
+					} catch (PackageManager.NameNotFoundException e) {
+
+					}*/
+				}
+			});
+			popup.show();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	
 	/**
-	 * °¡·Î / ¼¼·Î ¸ğµå º¯°æ ½Ã ÃÖ´ë°ª ´Ù½Ã ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
+	 * ê°€ë¡œ / ì„¸ë¡œ ëª¨ë“œ ë³€ê²½ ì‹œ ìµœëŒ€ê°’ ë‹¤ì‹œ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
 	 */
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
-		setMaxPosition();		//ÃÖ´ë°ª ´Ù½Ã ¼³Á¤
-		optimizePosition();		//ºä À§Ä¡ ÃÖÀûÈ­
+		setMaxPosition();		//ìµœëŒ€ê°’ ë‹¤ì‹œ ì„¤ì •
+		optimizePosition();		//ë·° ìœ„ì¹˜ ìµœì í™”
 	}
 	
 	@Override
 	public void onDestroy() {
-		if(mWindowManager != null) {		//¼­ºñ½º Á¾·á½Ã ºä Á¦°Å. *Áß¿ä : ºä¸¦ ²À Á¦°Å ÇØ¾ßÇÔ.
+		if(mWindowManager != null) {		//ì„œë¹„ìŠ¤ ì¢…ë£Œì‹œ ë·° ì œê±°. *ì¤‘ìš” : ë·°ë¥¼ ê¼­ ì œê±° í•´ì•¼í•¨.
 			if(mPopupView != null) mWindowManager.removeView(mPopupView);
+			if(mImageView != null) mWindowManager.removeView(mImageView);
 			if(mSeekBar != null) mWindowManager.removeView(mSeekBar);
 		}
 		super.onDestroy();
