@@ -12,13 +12,11 @@
         android:layout_height="fill_parent"
         android:layout_above="@+id/main_selected_textView"
         android:layout_gravity="center_horizontal"
-        circle:firstChildPosition="South" 
-        circle:rotateToCenter="true" 
+        android:background="@drawable/image_border"
+        circle:firstChildPosition="South"
         circle:isRotating="true"
-        circle:speed="75" >       
-<!--         circle:circleBackground="@drawable/green"  > -->
-
-
+        circle:rotateToCenter="true"
+        circle:speed="75" >
         <pe.sbk.alwaysontop.CircleImageView
             android:id="@+id/main_facebook_image"
             android:layout_width="35dp"

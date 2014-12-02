@@ -15,10 +15,12 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListPopupWindow;
@@ -34,6 +36,7 @@ public class AlwaysOnTopService extends Service {
 	private WindowManager mWindowManager;			//윈도우 매니저
 	private SeekBar mSeekBar;								//투명도 조절 seek bar
 	private Boolean _enable = true;
+	private LayoutInflater inflater;
 	
 	ArrayList<String> quickmenu;
 	List quickmenulist;
@@ -69,48 +72,6 @@ public class AlwaysOnTopService extends Service {
 			return true;
 		}
 	};*/
-	
-	private OnTouchListener mButtonTouchListener = new OnTouchListener() {
-		@Override public boolean onTouch(View v, MotionEvent event) {
-			switch(event.getAction()) {
-				case MotionEvent.ACTION_DOWN:				//사용자 터치 다운이면
-					if(MAX_X == -1)
-						setMaxPosition();
-					START_X = event.getRawX();					//터치 시작 점
-					START_Y = event.getRawY();					//터치 시작 점
-					PREV_X = mParams.x;							//뷰의 시작 점
-					PREV_Y = mParams.y;							//뷰의 시작 점
-					break;
-				case MotionEvent.ACTION_MOVE:
-					int x = (int)(event.getRawX() - START_X);	//이동한 거리
-					int y = (int)(event.getRawY() - START_Y);	//이동한 거리
-					
-					//터치해서 이동한 만큼 이동 시킨다
-					mParams.x = PREV_X + x;
-					mParams.y = PREV_Y + y;
-					
-					optimizePosition();		//뷰의 위치 최적화
-					mWindowManager.updateViewLayout(mImageView, mParams);	//뷰 업데이트
-					break;
-				case MotionEvent.ACTION_UP:
-					Display display = mWindowManager.getDefaultDisplay();
-					if(mParams.x > display.getWidth()/2){
-						mParams.x =display.getWidth();
-					}else{
-						mParams.x = 0;
-					}
-					
-					
-					mWindowManager.updateViewLayout(mImageView, mParams);	//뷰 업데이트
-					
-					initiatePopupWindow(mImageView);
-					break;
-			}
-			
-			return true;
-		}
-	};
-
 	
 	@Override
 	public IBinder onBind(Intent arg0) { return null; }
@@ -156,6 +117,8 @@ public class AlwaysOnTopService extends Service {
 		
 		mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);	//윈도우 매니저 불러옴.
 		addGmarketQuickButton();
+		
+		inflater = LayoutInflater.from(this);
 	}
 	
 	/**
@@ -219,11 +182,9 @@ public class AlwaysOnTopService extends Service {
 			WindowManager.LayoutParams.WRAP_CONTENT,
 			WindowManager.LayoutParams.WRAP_CONTENT,
 			WindowManager.LayoutParams.TYPE_PHONE,					//항상 최 상위에 있게. status bar 밑에 있음. 터치 이벤트 받을 수 있음.
-			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,		//이 속성을 안주면 터치 & 키 이벤트도 먹게 된다. 
-																					//포커스를 안줘서 자기 영역 밖터치는 인식 안하고 키이벤트를 사용하지 않게 설정
+			WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,		//이 속성을 안주면 터치 & 키 이벤트도 먹게 된다. //포커스를 안줘서 자기 영역 밖터치는 인식 안하고 키이벤트를 사용하지 않게 설정
 			PixelFormat.TRANSLUCENT);										//투명
 		mParams.gravity = Gravity.LEFT | Gravity.TOP;							//왼쪽 상단에 위치하게 함.
-		
 		mWindowManager.addView(mImageView, mParams);
 		
 		// TODO:
@@ -243,32 +204,59 @@ public class AlwaysOnTopService extends Service {
 		}
 	}
 	
-	
+	private OnTouchListener mButtonTouchListener = new OnTouchListener() {
+		@Override public boolean onTouch(View v, MotionEvent event) {
+			switch(event.getAction()) {
+				case MotionEvent.ACTION_DOWN:				//사용자 터치 다운이면
+					if(MAX_X == -1)
+						setMaxPosition();
+					START_X = event.getRawX();					//터치 시작 점
+					START_Y = event.getRawY();					//터치 시작 점
+					PREV_X = mParams.x;							//뷰의 시작 점
+					PREV_Y = mParams.y;							//뷰의 시작 점
+					break;
+				case MotionEvent.ACTION_MOVE:
+					int x = (int)(event.getRawX() - START_X);	//이동한 거리
+					int y = (int)(event.getRawY() - START_Y);	//이동한 거리
+					
+					//터치해서 이동한 만큼 이동 시킨다
+					mParams.x = PREV_X + x;
+					mParams.y = PREV_Y + y;
+					
+					optimizePosition();		//뷰의 위치 최적화
+					mWindowManager.updateViewLayout(mImageView, mParams);	//뷰 업데이트
+					break;
+				case MotionEvent.ACTION_UP:
+					Display display = mWindowManager.getDefaultDisplay();
+					if(mParams.x > display.getWidth()/2){
+						mParams.x =display.getWidth();
+					}else{
+						mParams.x = 0;
+					}
+					
+					
+					mWindowManager.updateViewLayout(mImageView, mParams);	//뷰 업데이트
+					
+					//initiatePopupWindow(mImageView);
+					initiateMenuWindow(mParams);
+					break;
+			}
+			
+			return true;
+		}
+	};
+
 	private void initiatePopupWindow(View anchor) {
 		try {
 			Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 			ListPopupWindow popup = new ListPopupWindow(this);
 			popup.setAnchorView(anchor);
 			popup.setWidth((int) (display.getWidth()/(1.5)));
-			//ArrayAdapter<String> arrayAdapter = 
-			//new ArrayAdapter<String>(this,R.layout.list_item, myArray);
 			popup.setAdapter(new CustomAdapter(getApplicationContext(), R.layout.row, quickmenulist));
 			popup.setOnItemClickListener(new OnItemClickListener() {
 
 				@Override
 				public void onItemClick(AdapterView<?> arg0, View view, int position, long id3) {
-					//Log.w("tag", "package : "+apps.get(position).pname.toString());
-/*					Intent i;
-					PackageManager manager = getPackageManager();
-					try {
-						i = manager.getLaunchIntentForPackage(apps.get(position).pname.toString());
-						if (i == null)
-							throw new PackageManager.NameNotFoundException();
-						i.addCategory(Intent.CATEGORY_LAUNCHER);
-						startActivity(i);
-					} catch (PackageManager.NameNotFoundException e) {
-
-					}*/
 				}
 			});
 			popup.show();
@@ -278,7 +266,27 @@ public class AlwaysOnTopService extends Service {
 		}
 	}
 
-	
+	private void initiateMenuWindow(LayoutParams params){
+		try{
+			final View circleMenu = inflater.inflate(R.layout.circle_menu, null);
+			circleMenu.setOnTouchListener(new OnTouchListener(){
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					switch (event.getAction()) {
+						case MotionEvent.ACTION_OUTSIDE:
+							mWindowManager.removeView(circleMenu);
+							return true;
+					}
+					return false;
+				}
+			});
+			
+			mWindowManager.addView(circleMenu, params);
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * 가로 / 세로 모드 변경 시 최대값 다시 설정해 주어야 함.
 	 */
