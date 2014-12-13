@@ -18,46 +18,67 @@
         circle:rotateToCenter="true"
         circle:speed="75" >
         <pe.sbk.alwaysontop.CircleImageView
-            android:id="@+id/main_facebook_image"
+            android:id="@+id/q_attendance_image"
             android:layout_width="35dp"
             android:layout_height="35dp"
-            android:src="@drawable/icon_facebook"
-            circle:name="@string/facebook" />
+            android:src="@drawable/q_attendance"
+            circle:name="@string/btn_attendance" />
 
         <pe.sbk.alwaysontop.CircleImageView
-            android:id="@+id/main_myspace_image"
+            android:id="@+id/q_best_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/icon_myspace"
-            circle:name="@string/myspace" />
+            android:src="@drawable/q_best"
+            circle:name="@string/btn_best" />
 
         <pe.sbk.alwaysontop.CircleImageView
-            android:id="@+id/main_google_image"
+            android:id="@+id/q_cart_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/icon_google"
-            circle:name="@string/google" />
+            android:src="@drawable/q_cart"
+            circle:name="@string/btn_cart" />
 
         <pe.sbk.alwaysontop.CircleImageView
-            android:id="@+id/main_linkedin_image"
+            android:id="@+id/q_ecoupon_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/icon_linkedin"
-            circle:name="@string/linkedin" />
+            android:src="@drawable/q_ecoupon"
+            circle:name="@string/btn_ecoupon" />
 
         <pe.sbk.alwaysontop.CircleImageView
-            android:id="@+id/main_twitter_image"
+            android:id="@+id/q_event_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/icon_twitter"
-            circle:name="@string/twitter" />
+            android:src="@drawable/q_event"
+            circle:name="@string/btn_event" />
 
         <pe.sbk.alwaysontop.CircleImageView
-            android:id="@+id/main_wordpress_image"
+            android:id="@+id/q_favorite_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/icon_wordpress"
-            circle:name="@string/wordpress" />
+            android:src="@drawable/q_favorite"
+            circle:name="@string/btn_favorite" />
+        
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_home_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_home"
+            circle:name="@string/btn_home" />
+        
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_order_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_order"
+            circle:name="@string/btn_order" />
+        
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_search_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_search"
+            circle:name="@string/btn_search" />
     </pe.sbk.alwaysontop.CircleLayout>
 
     <TextView

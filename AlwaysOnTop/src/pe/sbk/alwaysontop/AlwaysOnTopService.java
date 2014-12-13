@@ -23,6 +23,7 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.SeekBar;
 import android.widget.AdapterView.OnItemClickListener;
@@ -30,7 +31,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 public class AlwaysOnTopService extends Service {
-	private TextView mPopupView;							//항상 보이게 할 뷰
+	//private TextView mPopupView;							//항상 보이게 할 뷰
 	private ImageView mImageView;
 	private WindowManager.LayoutParams mParams;		//layout params 객체. 뷰의 위치 및 크기를 지정하는 객체
 	private WindowManager mWindowManager;			//윈도우 매니저
@@ -79,7 +80,7 @@ public class AlwaysOnTopService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-
+		/*
 		quickmenu = new ArrayList<String>();
 
 		quickmenu.add("HomeMain");
@@ -92,7 +93,7 @@ public class AlwaysOnTopService extends Service {
 			quickmenulist.add(quickmenu.get(i));
 		}
 
-		/*mPopupView = new TextView(this);																//뷰 생성
+		mPopupView = new TextView(this);																//뷰 생성
 		mPopupView.setText("이 뷰는 항상 위에 있다.\n갤럭시 & 옵티머스 팝업 뷰와 같음");	//텍스트 설정
 		mPopupView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);								//텍스트 크기 18sp
 		mPopupView.setTextColor(Color.BLUE);															//글자 색상
@@ -146,7 +147,7 @@ public class AlwaysOnTopService extends Service {
 	/**
 	 * 알파값 조절하는 컨트롤러를 추가한다
 	 */
-	private void addOpacityController() {
+	/*private void addOpacityController() {
 		mSeekBar = new SeekBar(this);		//투명도 조절 seek bar
 		mSeekBar.setMax(100);					//맥스 값 설정.
 		mSeekBar.setProgress(100);			//현재 투명도 설정. 100:불투명, 0은 완전 투명
@@ -171,12 +172,16 @@ public class AlwaysOnTopService extends Service {
 		params.gravity = Gravity.LEFT | Gravity.TOP;							//왼쪽 상단에 위치하게 함.
 		
 		mWindowManager.addView(mSeekBar, params);
-	}
+	}*/
 
 	private void addGmarketQuickButton(){
 		mImageView = new ImageView(this);							
-		mImageView.setImageResource(R.drawable.ic_launcher);
+		mImageView.setImageResource(R.drawable.q_icon);
+		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(40,40);		
+		mImageView.setLayoutParams(layoutParams);
+		mImageView.setAdjustViewBounds(true);
 		
+		//mImageView = (ImageView)inflater.inflate(R.layout.quick_button, null);
 		//최상위 윈도우에 넣기 위한 설정
 		mParams = new WindowManager.LayoutParams(
 			WindowManager.LayoutParams.WRAP_CONTENT,
@@ -246,7 +251,7 @@ public class AlwaysOnTopService extends Service {
 		}
 	};
 
-	private void initiatePopupWindow(View anchor) {
+/*	private void initiatePopupWindow(View anchor) {
 		try {
 			Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 			ListPopupWindow popup = new ListPopupWindow(this);
@@ -264,7 +269,7 @@ public class AlwaysOnTopService extends Service {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 
 	private void initiateMenuWindow(LayoutParams params){
 		try{
@@ -299,7 +304,7 @@ public class AlwaysOnTopService extends Service {
 	@Override
 	public void onDestroy() {
 		if(mWindowManager != null) {		//서비스 종료시 뷰 제거. *중요 : 뷰를 꼭 제거 해야함.
-			if(mPopupView != null) mWindowManager.removeView(mPopupView);
+			//if(mPopupView != null) mWindowManager.removeView(mPopupView);
 			if(mImageView != null) mWindowManager.removeView(mImageView);
 			if(mSeekBar != null) mWindowManager.removeView(mSeekBar);
 		}
