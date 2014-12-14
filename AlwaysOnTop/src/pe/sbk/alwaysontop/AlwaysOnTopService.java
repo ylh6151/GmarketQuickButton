@@ -32,7 +32,7 @@ import android.widget.TextView;
 
 public class AlwaysOnTopService extends Service {
 	//private TextView mPopupView;							//항상 보이게 할 뷰
-	private ImageView mImageView;
+	private View mImageView;
 	private WindowManager.LayoutParams mParams;		//layout params 객체. 뷰의 위치 및 크기를 지정하는 객체
 	private WindowManager mWindowManager;			//윈도우 매니저
 	private SeekBar mSeekBar;								//투명도 조절 seek bar
@@ -115,11 +115,11 @@ public class AlwaysOnTopService extends Service {
 */		
 		//addOpacityController();		//팝업 뷰의 투명도 조절하는 컨트롤러 추가
 		
-		
+		inflater = LayoutInflater.from(this);
 		mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);	//윈도우 매니저 불러옴.
 		addGmarketQuickButton();
 		
-		inflater = LayoutInflater.from(this);
+		
 	}
 	
 	/**
@@ -175,13 +175,13 @@ public class AlwaysOnTopService extends Service {
 	}*/
 
 	private void addGmarketQuickButton(){
-		mImageView = new ImageView(this);							
-		mImageView.setImageResource(R.drawable.q_icon);
-		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(40,40);		
-		mImageView.setLayoutParams(layoutParams);
-		mImageView.setAdjustViewBounds(true);
+		//mImageView = new View(this);							
+		//mImageView.setImageResource(R.drawable.q_icon);
+		//LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(40,40);		
+		//mImageView.setLayoutParams(layoutParams);
+		//mImageView.setAdjustViewBounds(true);
 		
-		//mImageView = (ImageView)inflater.inflate(R.layout.quick_button, null);
+		mImageView = inflater.inflate(R.layout.quick_button, null);
 		//최상위 윈도우에 넣기 위한 설정
 		mParams = new WindowManager.LayoutParams(
 			WindowManager.LayoutParams.WRAP_CONTENT,
@@ -232,9 +232,12 @@ public class AlwaysOnTopService extends Service {
 					mWindowManager.updateViewLayout(mImageView, mParams);	//뷰 업데이트
 					break;
 				case MotionEvent.ACTION_UP:
-					Display display = mWindowManager.getDefaultDisplay();
+					/*Display display = mWindowManager.getDefaultDisplay();
 					if(mParams.x > display.getWidth()/2){
-						mParams.x =display.getWidth();
+						mParams.x =display.getWidth();*/
+					
+					if(mParams.x > MAX_X/2){
+						mParams.x = MAX_X;
 					}else{
 						mParams.x = 0;
 					}
@@ -243,7 +246,9 @@ public class AlwaysOnTopService extends Service {
 					mWindowManager.updateViewLayout(mImageView, mParams);	//뷰 업데이트
 					
 					//initiatePopupWindow(mImageView);
-					initiateMenuWindow(mParams);
+					if(mParams.x == PREV_X && mParams.y == PREV_Y){
+						initiateMenuWindow(mParams);
+					}
 					break;
 			}
 			
@@ -286,7 +291,11 @@ public class AlwaysOnTopService extends Service {
 				}
 			});
 			
-			mWindowManager.addView(circleMenu, params);
+			
+			WindowManager.LayoutParams cParams = params;
+			cParams.x = cParams.x - (circleMenu.getWidth()/2);
+			cParams.y = cParams.y + (circleMenu.getHeight()/2);
+			mWindowManager.addView(circleMenu, cParams);
 			
 		}catch (Exception e) {
 			e.printStackTrace();
