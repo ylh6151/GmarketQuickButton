@@ -293,8 +293,11 @@ public class AlwaysOnTopService extends Service {
 			
 			
 			WindowManager.LayoutParams cParams = params;
-			cParams.x = cParams.x - (circleMenu.getWidth()/2);
-			cParams.y = cParams.y + (circleMenu.getHeight()/2);
+			//cParams.x = cParams.x - (circleMenu.getWidth()/2);
+			//cParams.y = cParams.y + (circleMenu.getHeight()/2);
+			//cParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+			//cParams.dimAmount = 0.75f;
+			//chathead에서 닫기 버튼에 이벤트 먹인거 참조	
 			mWindowManager.addView(circleMenu, cParams);
 			
 		}catch (Exception e) {
