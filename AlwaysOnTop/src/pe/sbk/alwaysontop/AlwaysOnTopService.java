@@ -4,31 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
-import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListPopupWindow;
 import android.widget.SeekBar;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.TextView;
 
 public class AlwaysOnTopService extends Service {
 	//private TextView mPopupView;							//항상 보이게 할 뷰
@@ -279,20 +270,41 @@ public class AlwaysOnTopService extends Service {
 	private void initiateMenuWindow(LayoutParams params){
 		try{
 			final View circleMenu = inflater.inflate(R.layout.circle_menu, null);
-			circleMenu.setOnTouchListener(new OnTouchListener(){
+//			circleMenu.setOnTouchListener(new OnTouchListener(){
+//				@Override
+//				public boolean onTouch(View v, MotionEvent event) {
+//					switch (event.getAction()) {
+//						case MotionEvent.ACTION_UP:
+//							mWindowManager.removeView(circleMenu);
+//							return true;
+//					}
+//					return false;
+//				}
+//			});
+			
+			circleMenu.setOnClickListener(new View.OnClickListener() {
 				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-					switch (event.getAction()) {
-						case MotionEvent.ACTION_OUTSIDE:
-							mWindowManager.removeView(circleMenu);
-							return true;
-					}
-					return false;
+				public void onClick(View v) {
+					mWindowManager.removeView(circleMenu);
 				}
 			});
 			
+			DisplayMetrics matrix = new DisplayMetrics();
+			mWindowManager.getDefaultDisplay().getMetrics(matrix);		//화면 정보를 가져와서
 			
-			WindowManager.LayoutParams cParams = params;
+			WindowManager.LayoutParams cParams = new WindowManager.LayoutParams(matrix.widthPixels, matrix.heightPixels,WindowManager.LayoutParams.TYPE_PHONE,					//항상 최 상위에 있게. status bar 밑에 있음. 터치 이벤트 받을 수 있음.
+					WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,		//이 속성을 안주면 터치 & 키 이벤트도 먹게 된다. //포커스를 안줘서 자기 영역 밖터치는 인식 안하고 키이벤트를 사용하지 않게 설정
+					PixelFormat.TRANSLUCENT);
+
+			//MAX_X = matrix.widthPixels - mImageView.getWidth();			//x 최대값 설정
+			//MAX_Y = matrix.heightPixels - mImageView.getHeight();
+			
+			circleMenu.setLayoutParams(new ViewGroup.LayoutParams(matrix.widthPixels, matrix.heightPixels));
+			
+			//cParams.width = matrix.widthPixels;
+			//cParams.height = matrix.heightPixels;
+								
+			
 			//cParams.x = cParams.x - (circleMenu.getWidth()/2);
 			//cParams.y = cParams.y + (circleMenu.getHeight()/2);
 			//cParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;

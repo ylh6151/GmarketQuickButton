@@ -2,16 +2,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:circle="http://schemas.android.com/apk/res/pe.sbk.alwaysontop"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#88000000"
     tools:context=".MainActivity" >
 
     <pe.sbk.alwaysontop.CircleLayout
         android:id="@+id/main_circle_layout"
         android:layout_width="250dp"
         android:layout_height="250dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
+        android:layout_marginTop="150dp"
+        android:layout_marginLeft="-125dp"
         android:background="@drawable/image_border"
         circle:firstChildPosition="South"
         circle:isRotating="true"
