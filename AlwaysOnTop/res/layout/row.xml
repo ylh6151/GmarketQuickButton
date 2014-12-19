@@ -13,7 +13,7 @@
             android:id="@+id/imageView1"
             android:layout_width="35dp"
             android:layout_height="35dp"
-            android:src="@drawable/floating2" />
+            android:src="@drawable/q_icon" />
 
         <TextView
             android:id="@+id/textView1"

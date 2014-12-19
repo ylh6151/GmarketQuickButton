@@ -38,7 +38,7 @@ public class CustomAdapter extends ArrayAdapter{
         txtName.setText(app);
 
         ImageView imageCity = (ImageView) convertView.findViewById(R.id.imageView1);
-        imageCity.setImageResource(R.drawable.floating2);
+        imageCity.setImageResource(R.drawable.q_icon);
         return convertView;
     }
 }

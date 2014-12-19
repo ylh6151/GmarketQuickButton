@@ -10,7 +10,7 @@
 	<uses-permission android:name="android.permission.GET_TASKS"/>
 	
 	<application
-		android:icon="@drawable/ic_launcher"
+		android:icon="@drawable/q_icon"
 		android:label="@string/app_name" >
 		<activity
 			android:label="@string/app_name"

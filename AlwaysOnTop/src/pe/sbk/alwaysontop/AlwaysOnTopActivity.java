@@ -45,7 +45,9 @@ public class AlwaysOnTopActivity extends Activity implements OnClickListener {
 			bindService(i, mConnection, Context.BIND_AUTO_CREATE);
 		}
 		else
+			unbindService(mConnection);
 			stopService(new Intent(this, AlwaysOnTopService.class));	//���� ����
+			
 	}
 	
 	private ServiceConnection mConnection = new ServiceConnection() {
