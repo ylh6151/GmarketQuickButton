@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:circle="http://schemas.android.com/apk/res/pe.sbk.alwaysontop"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#88000000"
+    tools:context=".MainActivity" >
+
+    <pe.sbk.alwaysontop.CircleLayout
+        android:id="@+id/main_circle_layout"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        circle:firstChildPosition="South"
+        circle:isRotating="true"
+        circle:rotateToCenter="true"
+        circle:speed="75" >
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_attendance_image"
+            circle:name="@string/btn_attendance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_attendance" />
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_best_image"
+            circle:name="@string/btn_best"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_best" />
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_cart_image"
+            circle:name="@string/btn_cart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_cart" />
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_ecoupon_image"
+            circle:name="@string/btn_ecoupon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_ecoupon" />
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_event_image"
+            circle:name="@string/btn_event"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_event" />
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_favorite_image"
+            circle:name="@string/btn_favorite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_favorite" />
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_home_image"
+            circle:name="@string/btn_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_home" />
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_order_image"
+            circle:name="@string/btn_order"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_order" />
+
+        <pe.sbk.alwaysontop.CircleImageView
+            android:id="@+id/q_search_image"
+            circle:name="@string/btn_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/q_search" />
+    </pe.sbk.alwaysontop.CircleLayout>
+
+</RelativeLayout>
