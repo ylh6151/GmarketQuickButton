@@ -244,7 +244,13 @@ public class AlwaysOnTopService extends Service {
 					mWindowManager.updateViewLayout(mImageView, mParams);	//뷰 업데이트
 					
 					//initiatePopupWindow(mImageView);
-					if(mParams.x == PREV_X && mParams.y == PREV_Y){
+					
+					/*if(mParams.x == PREV_X && mParams.y == PREV_Y){
+						initiateMenuWindow(mParams);
+					}*/
+					
+					
+					if(Math.abs(PREV_X - mParams.x) <= 1 && Math.abs(PREV_Y - mParams.y)<= 1){
 						initiateMenuWindow(mParams);
 					}
 					break;

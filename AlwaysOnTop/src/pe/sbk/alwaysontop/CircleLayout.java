@@ -31,6 +31,7 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 
 /**
@@ -83,6 +84,7 @@ public class CircleLayout extends ViewGroup {
 	private FlingRunnable actRunnable = null;
 
 	private WindowManager mWindowManager = (WindowManager) getContext().getSystemService("window");
+	//private View mImageView = inflater.inflate(R.layout.quick_button, null);
 	/**
 	 * @param context
 	 */
@@ -562,8 +564,11 @@ public class CircleLayout extends ViewGroup {
 		
 		//WindowManager mWindowManager = (WindowManager) getSystemService("window");
 		//final View circleMenu = inflater.inflate(R.layout.circle_menu, null);
+		ViewParent parent = ((ViewGroup)view.getParent()).getParent();
 
 		try {
+			//mWindowManager.removeView((View)parent);
+			//mWindowManager.addView(mImageView, params);
 			getContext().startActivity(intent);
 		} catch (ActivityNotFoundException ex) {
 			return;
