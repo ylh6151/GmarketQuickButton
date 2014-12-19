@@ -3,22 +3,29 @@ package pe.sbk.alwaysontop;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Service;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
+import android.net.Uri;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
-import android.view.Display;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
 public class AlwaysOnTopService extends Service {
@@ -29,7 +36,7 @@ public class AlwaysOnTopService extends Service {
 	private SeekBar mSeekBar;								//투명도 조절 seek bar
 	private Boolean _enable = true;
 	private LayoutInflater inflater;
-	
+	private final IBinder mBinder = new LocalBinder();
 	ArrayList<String> quickmenu;
 	List quickmenulist;
 	
@@ -65,8 +72,16 @@ public class AlwaysOnTopService extends Service {
 		}
 	};*/
 	
+	public class LocalBinder extends Binder {
+		AlwaysOnTopService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return AlwaysOnTopService.this;
+        }
+    }
+
+	
 	@Override
-	public IBinder onBind(Intent arg0) { return null; }
+	public IBinder onBind(Intent arg0) { return mBinder; }
 	
 	@Override
 	public void onCreate() {
@@ -109,7 +124,6 @@ public class AlwaysOnTopService extends Service {
 		inflater = LayoutInflater.from(this);
 		mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);	//윈도우 매니저 불러옴.
 		addGmarketQuickButton();
-		
 		
 	}
 	
@@ -183,21 +197,14 @@ public class AlwaysOnTopService extends Service {
 		mParams.gravity = Gravity.LEFT | Gravity.TOP;							//왼쪽 상단에 위치하게 함.
 		mWindowManager.addView(mImageView, mParams);
 		
-		// TODO:
-/*		mImageView.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-				initiatePopupWindow(mImageView);
-				_enable = false;
-			}
-		});*/
-		
 		try {	
 			mImageView.setOnTouchListener(mButtonTouchListener);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
+		
+		
+
 	}
 	
 	private OnTouchListener mButtonTouchListener = new OnTouchListener() {
@@ -267,50 +274,157 @@ public class AlwaysOnTopService extends Service {
 		}
 	}*/
 
-	private void initiateMenuWindow(LayoutParams params){
+	public void setMenuClickEvent(View v, String url){
+		
+		//final View circleMenu = inflater.inflate(R.layout.circle_menu, null);
+		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url) );
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		try {
+			mWindowManager.removeView(v);
+			startActivity(intent);
+		} catch (ActivityNotFoundException e) {
+			return;
+		}
+		
+	}	
+	
+	private void initiateMenuWindow(final LayoutParams params){
 		try{
 			final View circleMenu = inflater.inflate(R.layout.circle_menu, null);
-//			circleMenu.setOnTouchListener(new OnTouchListener(){
-//				@Override
-//				public boolean onTouch(View v, MotionEvent event) {
-//					switch (event.getAction()) {
-//						case MotionEvent.ACTION_UP:
-//							mWindowManager.removeView(circleMenu);
-//							return true;
-//					}
-//					return false;
-//				}
-//			});
 			
 			circleMenu.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					mWindowManager.removeView(circleMenu);
+					mWindowManager.addView(mImageView, params);
 				}
 			});
 			
 			DisplayMetrics matrix = new DisplayMetrics();
 			mWindowManager.getDefaultDisplay().getMetrics(matrix);		//화면 정보를 가져와서
+		
+			pe.sbk.alwaysontop.CircleLayout circleMenuView = (pe.sbk.alwaysontop.CircleLayout) circleMenu.findViewById(R.id.main_circle_layout);
 			
 			WindowManager.LayoutParams cParams = new WindowManager.LayoutParams(matrix.widthPixels, matrix.heightPixels,WindowManager.LayoutParams.TYPE_PHONE,					//항상 최 상위에 있게. status bar 밑에 있음. 터치 이벤트 받을 수 있음.
 					WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,		//이 속성을 안주면 터치 & 키 이벤트도 먹게 된다. //포커스를 안줘서 자기 영역 밖터치는 인식 안하고 키이벤트를 사용하지 않게 설정
 					PixelFormat.TRANSLUCENT);
-
-			//MAX_X = matrix.widthPixels - mImageView.getWidth();			//x 최대값 설정
-			//MAX_Y = matrix.heightPixels - mImageView.getHeight();
 			
-			circleMenu.setLayoutParams(new ViewGroup.LayoutParams(matrix.widthPixels, matrix.heightPixels));
+			Resources r = getApplicationContext().getResources();
+			int px = (int) TypedValue.applyDimension(
+			        TypedValue.COMPLEX_UNIT_DIP,
+			        250, 
+			        r.getDisplayMetrics()
+			);
 			
-			//cParams.width = matrix.widthPixels;
-			//cParams.height = matrix.heightPixels;
-								
+			RelativeLayout.LayoutParams mp = (RelativeLayout.LayoutParams)circleMenuView.getLayoutParams();			
+			if(params.x == 0){
+				mp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+				mp.leftMargin = -(px/2);
+			}else{
+				mp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+				mp.rightMargin = -(px/2);
+			}
+						
+			mp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+			mp.topMargin = params.y - (px/2);
+			
+			circleMenuView.setLayoutParams(mp);
 			
 			//cParams.x = cParams.x - (circleMenu.getWidth()/2);
 			//cParams.y = cParams.y + (circleMenu.getHeight()/2);
-			//cParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-			//cParams.dimAmount = 0.75f;
-			//chathead에서 닫기 버튼에 이벤트 먹인거 참조	
+			mWindowManager.removeView(mImageView);
 			mWindowManager.addView(circleMenu, cParams);
+			
+			
+			pe.sbk.alwaysontop.CircleImageView homeBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_home_image);
+			
+			homeBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://main");
+				}
+			});
+			
+			pe.sbk.alwaysontop.CircleImageView attendanceBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_attendance_image);
+			
+			attendanceBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://main?pluszone");
+				}
+			});
+			
+			pe.sbk.alwaysontop.CircleImageView bestBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_best_image);
+			
+			bestBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://main?best");
+				}
+			});
+			
+			pe.sbk.alwaysontop.CircleImageView ecouponBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_ecoupon_image);
+			
+			ecouponBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://main?gift");
+				}
+			});
+			
+			pe.sbk.alwaysontop.CircleImageView searchBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_search_image);
+			
+			searchBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://search");
+				}
+			});
+			
+			pe.sbk.alwaysontop.CircleImageView eventBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_event_image);
+			
+			eventBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://openwindow?title=cart&targetUrl=http://mobile.gmarket.co.kr/Display/SpecialShoppingList");
+				}
+			});
+			
+			pe.sbk.alwaysontop.CircleImageView orderBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_order_image);
+			
+			orderBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://openwindow?title=mmyg&targetUrl=http://mmyg.gmarket.co.kr");
+				}
+			});
+			
+			pe.sbk.alwaysontop.CircleImageView favoriteBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_favorite_image);
+			
+			favoriteBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://openwindow?title=cart&targetUrl=http://mmyg.gmarket.co.kr/Favorite/MyFavoriteItems");
+				}
+			});
+			
+			pe.sbk.alwaysontop.CircleImageView cartBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_cart_image);
+			
+			cartBtn.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					setMenuClickEvent(circleMenu, "gmarket://openwindow?title=cart&targetUrl=http://mescrow.gmarket.co.kr/ko/cart");
+				}
+			});
 			
 		}catch (Exception e) {
 			e.printStackTrace();

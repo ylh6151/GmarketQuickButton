@@ -16,12 +16,15 @@ package pe.sbk.alwaysontop;
  * limitations under the License.
  */
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -463,7 +466,7 @@ public class CircleLayout extends ViewGroup {
 
 		}
 
-		@Override
+		/*@Override
 		public boolean onSingleTapUp(MotionEvent e) {
 			mTappedViewsPostition = pointToPosition(e.getX(), e.getY());
 			if (mTappedViewsPostition >= 0) {
@@ -485,7 +488,7 @@ public class CircleLayout extends ViewGroup {
 			}
 
 			if (mTappedView != null) {
-				CircleImageView view = (CircleImageView) (mTappedView);
+				//CircleImageView view = (CircleImageView) (mTappedView);
 				if (selected != mTappedViewsPostition) {
 					rotateViewToCenter(view, false);
 					if (!rotateToCenter) {
@@ -507,10 +510,26 @@ public class CircleLayout extends ViewGroup {
 								view.getName());
 					}
 				}
+				
+				if (mOnItemClickListener != null) {
+					mOnItemClickListener.onItemClick(mTappedView,
+							view.getName());
+				}
+				
+				//AlwaysOnTopService service = new AlwaysOnTopService();
+				//service.setMenuClickEvent();
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("gmarket://home") );
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				try {
+					getContext().startActivity(intent);
+				} catch (ActivityNotFoundException ex) {
+					return false;
+				}
+
 				return true;
 			}
 			return super.onSingleTapUp(e);
-		}
+		}*/
 	}
 
 	/**
