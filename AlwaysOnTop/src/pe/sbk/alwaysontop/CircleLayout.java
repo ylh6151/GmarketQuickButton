@@ -31,6 +31,7 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 /**
  * 
@@ -81,6 +82,7 @@ public class CircleLayout extends ViewGroup {
 	// The runnable of the current rotation
 	private FlingRunnable actRunnable = null;
 
+	private WindowManager mWindowManager = (WindowManager) getContext().getSystemService("window");
 	/**
 	 * @param context
 	 */
@@ -466,7 +468,7 @@ public class CircleLayout extends ViewGroup {
 
 		}
 
-		/*@Override
+		@Override
 		public boolean onSingleTapUp(MotionEvent e) {
 			mTappedViewsPostition = pointToPosition(e.getX(), e.getY());
 			if (mTappedViewsPostition >= 0) {
@@ -488,8 +490,10 @@ public class CircleLayout extends ViewGroup {
 			}
 
 			if (mTappedView != null) {
-				//CircleImageView view = (CircleImageView) (mTappedView);
-				if (selected != mTappedViewsPostition) {
+				CircleImageView view = (CircleImageView) (mTappedView);
+				startActivityIntent(view);
+
+				/*if (selected != mTappedViewsPostition) {
 					rotateViewToCenter(view, false);
 					if (!rotateToCenter) {
 						if (mOnItemSelectedListener != null) {
@@ -509,29 +513,64 @@ public class CircleLayout extends ViewGroup {
 						mOnItemClickListener.onItemClick(mTappedView,
 								view.getName());
 					}
-				}
-				
-				if (mOnItemClickListener != null) {
-					mOnItemClickListener.onItemClick(mTappedView,
-							view.getName());
-				}
-				
-				//AlwaysOnTopService service = new AlwaysOnTopService();
-				//service.setMenuClickEvent();
-				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("gmarket://home") );
-				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				try {
-					getContext().startActivity(intent);
-				} catch (ActivityNotFoundException ex) {
-					return false;
-				}
-
+				}*/
 				return true;
 			}
 			return super.onSingleTapUp(e);
-		}*/
+		}
 	}
 
+	
+	private void startActivityIntent(CircleImageView view){
+		
+		String schemeUrl = "";
+		
+		switch(view.getId()){
+			case R.id.q_home_image:
+				schemeUrl = "gmarket://main";
+				break;
+			case R.id.q_attendance_image:
+				schemeUrl = "gmarket://main?pluszone";
+				break;
+			case R.id.q_best_image:
+				schemeUrl = "gmarket://main?best";
+				break;
+			case R.id.q_ecoupon_image:
+				schemeUrl = "gmarket://main?gift";
+				break;
+			case R.id.q_search_image:
+				schemeUrl = "gmarket://search";
+				break;
+			case R.id.q_event_image:
+				schemeUrl = "gmarket://openwindow?title=cart&targetUrl=http://mobile.gmarket.co.kr/Display/SpecialShoppingList";
+				break;
+			case R.id.q_order_image:
+				schemeUrl = "gmarket://openwindow?title=mmyg&targetUrl=http://mmyg.gmarket.co.kr";
+				break;
+			case R.id.q_favorite_image:
+				schemeUrl = "gmarket://openwindow?title=cart&targetUrl=http://mmyg.gmarket.co.kr/Favorite/MyFavoriteItems";
+				break;
+			case R.id.q_cart_image:
+				schemeUrl = "gmarket://openwindow?title=cart&targetUrl=http://mescrow.gmarket.co.kr/ko/car";
+				break;
+			default:
+				schemeUrl = "gmarket://main";
+		}
+		
+		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(schemeUrl) );
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		
+		//WindowManager mWindowManager = (WindowManager) getSystemService("window");
+		//final View circleMenu = inflater.inflate(R.layout.circle_menu, null);
+
+		try {
+			getContext().startActivity(intent);
+		} catch (ActivityNotFoundException ex) {
+			return;
+		}
+		
+	}
+	
 	/**
 	 * Rotates the given view to the center of the menu.
 	 * 

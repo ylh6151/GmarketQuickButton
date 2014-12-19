@@ -274,13 +274,13 @@ public class AlwaysOnTopService extends Service {
 		}
 	}*/
 
-	public void setMenuClickEvent(View v, String url){
+	public void setMenuClickEvent(String url){
 		
-		//final View circleMenu = inflater.inflate(R.layout.circle_menu, null);
+		final View circleMenu = inflater.inflate(R.layout.circle_menu, null);
 		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url) );
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		try {
-			mWindowManager.removeView(v);
+			mWindowManager.removeView(circleMenu);
 			startActivity(intent);
 		} catch (ActivityNotFoundException e) {
 			return;
@@ -336,7 +336,7 @@ public class AlwaysOnTopService extends Service {
 			mWindowManager.addView(circleMenu, cParams);
 			
 			
-			pe.sbk.alwaysontop.CircleImageView homeBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_home_image);
+			/*pe.sbk.alwaysontop.CircleImageView homeBtn = (pe.sbk.alwaysontop.CircleImageView)circleMenuView.findViewById(R.id.q_home_image);
 			
 			homeBtn.setOnClickListener(new View.OnClickListener() {
 				
@@ -424,7 +424,7 @@ public class AlwaysOnTopService extends Service {
 				public void onClick(View v) {
 					setMenuClickEvent(circleMenu, "gmarket://openwindow?title=cart&targetUrl=http://mescrow.gmarket.co.kr/ko/cart");
 				}
-			});
+			});*/
 			
 		}catch (Exception e) {
 			e.printStackTrace();
